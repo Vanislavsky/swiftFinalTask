@@ -185,6 +185,173 @@ class userStorage: UsersStorageProtocol {
         }
         return nil
     }
+
+    func addUser(id: FirstCourseFinalTaskChecker.GenericIdentifier<FirstCourseFinalTaskChecker.UserProtocol>, username: String, fullname: String, avatarURL: URL?, follows: User...) {
+        var user = User(id: id, username: username, fullname: fullname, avatarURL: avatarURL)
+        for follow in follows {
+            user.followedArr.append(follow)
+        }
+        user.followsCount = user.followedArr.count
+        
+        for element in userArr {
+            for follow in follows {
+                if follow.id == element.id{
+                    element.followersArr.append(user)
+                    element.followedByCount += 1
+                }
+            }
+        }
+        
+        userArr.append(user)
+    }
+    
+    func checkId(searchId: FirstCourseFinalTaskChecker.GenericIdentifier<FirstCourseFinalTaskChecker.UserProtocol>) -> Bool {
+        for element in userArr {
+            if element.id == searchId {
+                return true
+            }
+        }
+        return false
+    }
+    
+    // добавление подписок
+    func addFollowsToUser(searchId: FirstCourseFinalTaskChecker.GenericIdentifier<FirstCourseFinalTaskChecker.UserProtocol>, follows: User...) -> Bool {
+        if(!checkId(searchId: searchId)) {
+                   return false
+               }
+        
+        for element in userArr {
+            if element.id == searchId {
+                for follow in follows {
+                    element.followedArr.append(follow)
+                }
+            }
+        }
+        
+        for element in userArr {
+            for follow in follows {
+                if follow.id == element.id{
+                    for el in userArr{
+                        if el.id == searchId {
+                            element.followersArr.append(el)
+                            element.followedByCount += 1
+                        }
+                    }
+                }
+            }
+        }
+        return true
+    }
+    
+    
+    // добавление подписчиков
+    func addFollowedToUser(searchId: FirstCourseFinalTaskChecker.GenericIdentifier<FirstCourseFinalTaskChecker.UserProtocol>, followed: User...)-> Bool {
+        if(!checkId(searchId: searchId)) {
+            return false
+        }
+        
+        for element in userArr {
+            if element.id == searchId {
+                for follow in followed {
+                    element.followersArr.append(follow)
+                }
+            }
+        }
+        
+        for element in userArr {
+            for follow in followed {
+                if follow.id == element.id{
+                    for el in userArr{
+                        if el.id == searchId {
+                            element.followedArr.append(el)
+                            element.followsCount += 1
+                        }
+                    }
+                }
+            }
+        }
+        return true
+    }
+    
+    func clearUser(searchId: FirstCourseFinalTaskChecker.GenericIdentifier<FirstCourseFinalTaskChecker.UserProtocol>) -> Bool {
+        for element in userArr {
+            if element.id == searchId {
+                userArr = userArr.filter { $0.id != searchId }
+                return true
+            }
+        }
+        return false
+    }
+    
+    func clearUser(searchString: String) -> Bool {
+        for element in userArr {
+            if element.username == searchString || element.fullName == searchString {
+                userArr = userArr.filter { $0.username != searchString && $0.fullName != searchString }
+                return true
+            }
+        }
+        return false
+    }
+    
+    // удаление подписок
+    func clearFollowsToUser(searchId: FirstCourseFinalTaskChecker.GenericIdentifier<FirstCourseFinalTaskChecker.UserProtocol>, unfollows: User...) -> Bool {
+        if(!checkId(searchId: searchId)) {
+                   return false
+               }
+        
+        for element in userArr {
+            if element.id == searchId {
+                for unfollow in unfollows {
+                    element.followedArr = element.followedArr.filter { $0.id != unfollow.id }
+                    element.followsCount -= 1
+                }
+            }
+        }
+        
+        for element in userArr {
+            for unfollow in unfollows {
+                if unfollow.id == element.id{
+                    for el in userArr{
+                        if el.id == searchId {
+                            element.followersArr = element.followersArr.filter { $0.id != el.id }
+                            element.followedByCount -= 1
+                        }
+                    }
+                }
+            }
+        }
+        return true
+    }
+    
+    // удаление подписчиков
+    func clearFollowedToUser(searchId: FirstCourseFinalTaskChecker.GenericIdentifier<FirstCourseFinalTaskChecker.UserProtocol>, unfollowed: User...) -> Bool {
+        if(!checkId(searchId: searchId)) {
+                   return false
+               }
+        
+        for element in userArr {
+            if element.id == searchId {
+                for unfollow in unfollowed {
+                    element.followersArr = element.followedArr.filter { $0.id != unfollow.id }
+                    element.followedByCount -= 1
+                }
+            }
+        }
+        
+        for element in userArr {
+            for unfollow in unfollowed {
+                if unfollow.id == element.id{
+                    for el in userArr{
+                        if el.id == searchId {
+                            element.followedArr = element.followersArr.filter { $0.id != el.id }
+                            element.followsCount -= 1
+                        }
+                    }
+                }
+            }
+        }
+        return true
+    }
 }
 
 class Post: PostProtocol {
@@ -302,6 +469,59 @@ class postStorage: PostsStorageProtocol {
             }
         }
         return nil
+    }
+
+    func addPost(id: GenericIdentifier<PostProtocol>, author: GenericIdentifier<UserProtocol>, description: String, imageURL: URL, createdTime: Date, likedPosts: FirstCourseFinalTaskChecker.GenericIdentifier<FirstCourseFinalTaskChecker.UserProtocol>...) {
+        var post = Post(id: id, author: author, description: description, imageURL: imageURL, createdTime: createdTime)
+        for likedPost in likedPosts {
+            post.likedPostArr.append(likedPost)
+            post.likedByCount += 1
+            if likedPost == currUser {
+                post.currentUserLikesThisPost = true
+            }
+        }
+        postArr.append(post)
+    }
+    
+    func checkId(searchId: GenericIdentifier<PostProtocol>) -> Bool {
+        for element in postArr {
+            if element.id == searchId {
+                
+                return true
+            }
+        }
+        return false
+    }
+    
+    func clearPost(searchId: GenericIdentifier<PostProtocol>) -> Bool {
+        if(!checkId(searchId: searchId)) {
+            return false
+        }
+    
+        postArr = postArr.filter {  $0.id !=  searchId}
+        return true
+    }
+    
+    func clearPost(searchString: String) -> Bool {
+        for element in postArr {
+            if element.description == searchString {
+                postArr = postArr.filter {  $0.description !=  searchString}
+                return true
+            }
+            
+        }
+            return false
+    }
+    
+    func clearPost(author: GenericIdentifier<UserProtocol>) -> Bool {
+        for element in postArr {
+            if element.author == author {
+                postArr = postArr.filter {  $0.author !=  author }
+                return true
+            }
+            
+        }
+            return false
     }
 }
 
