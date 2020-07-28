@@ -437,6 +437,38 @@ class postStorage: PostsStorageProtocol {
         }
         return arr
     }
+
+    func addLikedPost(searchId: GenericIdentifier<PostProtocol>, likedposts: FirstCourseFinalTaskChecker.GenericIdentifier<FirstCourseFinalTaskChecker.UserProtocol>...) -> Bool{
+        if(!checkId(searchId: searchId)) {
+            return false
+        }
+        
+        for element in postArr {
+            if element.id == searchId {
+                for likedPost in likedposts {
+                    element.likedPostArr.append(likedPost)
+                    element.likedByCount += 1
+                }
+            }
+        }
+        return true
+    }
+    
+    func clearLikedPost(searchId: GenericIdentifier<PostProtocol>, unlikedposts: FirstCourseFinalTaskChecker.GenericIdentifier<FirstCourseFinalTaskChecker.UserProtocol>...) -> Bool{
+        if(!checkId(searchId: searchId)) {
+            return false
+        }
+        
+        for element in postArr {
+            if element.id == searchId {
+                for unlikedPost in unlikedposts {
+                    element.likedPostArr = element.likedPostArr.filter { $0 != unlikedPost }
+                    element.likedByCount -= 1
+                }
+            }
+        }
+        return true
+    }
     
     func likePost(with postID: GenericIdentifier<PostProtocol>) -> Bool {
         for element in postArr {
